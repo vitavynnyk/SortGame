@@ -188,13 +188,10 @@ public class NumberSortApp {
     }
 
     private void handleSortButtonClick() {
-        if (!isDescendingOrder) {
-            Integer[] numbersArray = shuffledNumbers.toArray(new Integer[0]);
-            quickSort(numbersArray, 0, numbersArray.length - 1);
-            shuffledNumbers = Arrays.asList(numbersArray);
-
-        } else {
-            Collections.sort(shuffledNumbers);
+        Integer[] numbersArray = shuffledNumbers.toArray(new Integer[0]);
+        quickSort(numbersArray, 0, numbersArray.length - 1);
+        shuffledNumbers = Arrays.asList(numbersArray);
+        if (isDescendingOrder) {
             Collections.reverse(shuffledNumbers);
         }
         isDescendingOrder = !isDescendingOrder;

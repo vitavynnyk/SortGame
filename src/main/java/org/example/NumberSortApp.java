@@ -10,6 +10,7 @@ import java.util.List;
 public class NumberSortApp {
     private JFrame frame;
     private JTextField numInputField;
+    private int currentNumInputValue;
 
     private JPanel numbersPanel;
     private List<Integer> shuffledNumbers;
@@ -146,13 +147,14 @@ public class NumberSortApp {
         Collections.shuffle(shuffledList);
 
         shuffledNumbers = new ArrayList<>(shuffledList);
+        currentNumInputValue = Integer.parseInt(numInputField.getText());
 
-        updateSortPanel();
+        updateSortPanel(currentNumInputValue);
     }
 
-    private void updateSortPanel() {
+    private void updateSortPanel(int numberOfCells) {
         int maxNumbersPerColumn = 10;
-        int totalNumbers = shuffledNumbers.size();
+        int totalNumbers = Math.min(numberOfCells, shuffledNumbers.size());
 
         numbersPanel.removeAll();
         numbersPanel.setLayout(new GridBagLayout());
@@ -188,14 +190,25 @@ public class NumberSortApp {
     }
 
     private void handleSortButtonClick() {
-        Integer[] numbersArray = shuffledNumbers.toArray(new Integer[0]);
-        quickSort(numbersArray, 0, numbersArray.length - 1);
-        shuffledNumbers = Arrays.asList(numbersArray);
-        if (isDescendingOrder) {
-            Collections.reverse(shuffledNumbers);
-        }
-        isDescendingOrder = !isDescendingOrder;
-        updateSortPanel();
+        Thread sortThread = new Thread(() -> {
+            for (int i = 0; i < shuffledNumbers.size(); i++) {
+                Integer[] numbersArray = shuffledNumbers.toArray(new Integer[0]);
+                quickSort(numbersArray, 0, i);
+                shuffledNumbers = Arrays.asList(numbersArray);
+                if (isDescendingOrder) {
+                    Collections.reverse(shuffledNumbers);
+                }
+                SwingUtilities.invokeLater(() -> updateSortPanel(currentNumInputValue));
+                try {
+                    Thread.sleep(200); // Delay for 500 milliseconds
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            isDescendingOrder = !isDescendingOrder;
+        });
+
+        sortThread.start();
     }
 
     private void quickSort(Integer[] array, int low, int high) {
@@ -206,6 +219,7 @@ public class NumberSortApp {
             quickSort(array, partitionIndex + 1, high);
         }
     }
+
 
     private int partition(Integer[] array, int low, int high) {
         int pivot = array[high];
@@ -228,7 +242,8 @@ public class NumberSortApp {
 
     private void handleNumberButtonClick(int clickedValue) {
         if (clickedValue <= 30) {
-            initSortPanel();
+            currentNumInputValue = clickedValue;
+            updateSortPanel(currentNumInputValue);
             if (!isDescendingOrder) {
                 isDescendingOrder = true;
             }
